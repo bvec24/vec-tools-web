@@ -27,7 +27,8 @@ class AppState(rx.State):
 
     user: Optional[str] = None
     error_message: str = ""
-    theme_dark: bool = rx.LocalStorage(False, name="theme_dark")
+    theme_dark: bool = False
+    theme_cookie: str | None = rx.Cookie(name="theme_dark_cookie")
     tools: list[Tool] = []
     groups: dict[str, list[Tool]] = {}
     running: bool = False
@@ -73,13 +74,14 @@ class AppState(rx.State):
     @rx.event
     def hydrate_user(self):
         """
-        Lee el nombre de usuario de la cookie de sesión al cargar la página.
-        Reflex gestiona la cookie internamente a través del token.
+        Lee el nombre de usuario de la cookie de sesi
+        Reflex gestiona la cookie internamente a trav
         """
         if self.is_authenticated:
             self.user = ADMIN_USER
         else:
             self.user = None
+        self.theme_dark = self.theme_cookie == "dark"
         self.error_message = ""
 
     @rx.event
@@ -111,6 +113,7 @@ class AppState(rx.State):
         Cambia entre el tema claro y oscuro.
         """
         self.theme_dark = not self.theme_dark
+        self.theme_cookie = "dark" if self.theme_dark else "light"
 
     @rx.event
     def on_load(self):
