@@ -87,16 +87,16 @@ class AppState(rx.State):
     @rx.event
     def login(self, form_data: dict):
         """
-        Valida las credenciales y establece la cookie de sesión si son correctas.
+        Valida las credenciales y establece la cookie de sesi
         """
         username = form_data.get("username", "").strip()
         password = form_data.get("password", "").strip()
         if username == ADMIN_USER and password == ADMIN_PASS:
             self.user = username
             self.error_message = ""
-            return rx.redirect("/", token=username)
+            return rx.redirect("/")
         else:
-            self.error_message = "Usuario o contraseña incorrectos."
+            self.error_message = "Usuario o contrase\x08\x08a incorrectos."
             self.user = None
 
     @rx.event
