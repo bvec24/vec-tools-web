@@ -19,6 +19,13 @@ def top_bar() -> rx.Component:
             rx.el.div(
                 rx.icon(tag="sun", class_name="h-5 w-5 text-gray-500"),
                 rx.el.button(
+                    rx.el.span(
+                        class_name=rx.cond(
+                            AppState.theme_dark,
+                            "block w-4 h-4 rounded-full bg-white transform translate-x-4 transition-transform",
+                            "block w-4 h-4 rounded-full bg-white transform translate-x-0 transition-transform",
+                        )
+                    ),
                     class_name=rx.cond(
                         AppState.theme_dark,
                         "w-10 h-6 rounded-full p-1 bg-purple-600 transition-all",

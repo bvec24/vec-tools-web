@@ -27,7 +27,7 @@ class AppState(rx.State):
 
     user: Optional[str] = None
     error_message: str = ""
-    theme_dark: bool = False
+    theme_dark: bool = rx.LocalStorage(False, name="theme_dark")
     tools: list[Tool] = []
     groups: dict[str, list[Tool]] = {}
     running: bool = False
