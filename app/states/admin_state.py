@@ -14,6 +14,72 @@ class UserData(TypedDict):
 
 
 class AdminState(rx.State):
+    # Estado para cambio de contraseña
+    is_password_modal_open: bool = False
+    password_user_id: Optional[int] = None
+    password_user_username: str = ""
+    new_password: str = ""
+    confirm_password: str = ""
+    password_error: str = ""
+    password_success: str = ""
+    show_new_password: bool = False
+    show_confirm_password: bool = False
+
+    @rx.event
+    def open_password_modal(self, user_id: int, username: str):
+        self.is_password_modal_open = True
+        self.password_user_id = user_id
+        self.password_user_username = username
+        self.new_password = ""
+        self.confirm_password = ""
+        self.password_error = ""
+        self.password_success = ""
+        self.show_new_password = False
+        self.show_confirm_password = False
+
+    @rx.event
+    def close_password_modal(self):
+        self.is_password_modal_open = False
+        self.password_user_id = None
+        self.password_user_username = ""
+        self.new_password = ""
+        self.confirm_password = ""
+        self.password_error = ""
+        self.password_success = ""
+        self.show_new_password = False
+        self.show_confirm_password = False
+
+    @rx.event
+    def set_password_value(self, key: str, value: str):
+        setattr(self, key, value)
+
+    @rx.event
+    def toggle_show_new_password(self):
+        self.show_new_password = not self.show_new_password
+
+    @rx.event
+    def toggle_show_confirm_password(self):
+        self.show_confirm_password = not self.show_confirm_password
+
+    @rx.event
+    async def change_user_password(self):
+        if not self.new_password or not self.confirm_password:
+            self.password_error = "Todos los campos son obligatorios."
+            return
+        if self.new_password != self.confirm_password:
+            self.password_error = "Las contraseñas no coinciden."
+            return
+        with get_session() as db:
+            user = db.query(UserModel).filter(UserModel.id == self.password_user_id).first()
+            if not user:
+                self.password_error = "Usuario no encontrado."
+                return
+            user.password_hash = hash_password(self.new_password)
+            db.commit()
+        self.password_success = f"Contraseña de {self.password_user_username} cambiada exitosamente."
+        self.password_error = ""
+        self.new_password = ""
+        self.confirm_password = ""
     all_users: list[UserData] = []
     is_user_modal_open: bool = False
     is_editing: bool = False

@@ -1,0 +1,69 @@
+*** a/app/pages/permissions.py
+--- b/app/pages/permissions.py
+@@
+-def permissions_page() -> rx.Component:
+-    """Página de permisos (admin)."""
+-    return rx.cond(
+-        AppState.is_authenticated & AppState.user_is_admin,
+-        rx.box(
+-            top_bar(),  # header fijo
+-            rx.box(
+-                sidebar(),
+-                rx.box(
+-                    # título + refrescar
+-                    rx.hstack(
+-                        rx.heading("Permisos", size="6"),
+-                        rx.spacer(),
+-                        rx.button("Refrescar", on_click=PermissionsState.on_load_permissions),
+-                        align="center",
+-                        width="100%",
+-                        mb="4",
+-                    ),
+-                    # tabla de usuarios
+-                    rx.box(
+-                        _users_table(),
+-                        class_name="shadow overflow-hidden border border-gray-200 sm:rounded-lg dark:border-gray-700",
+-                    ),
+-                    # modal/overlay para editar permisos del usuario
+-                    _edit_permissions_modal(),
+-                    padding="16px",
+-                    pt=HEADER_H,  # evitar superposición con header fixed
+-                ),
+-            ),
+-            class_name="bg-gray-50 dark:bg-gray-950 min-h-screen font-['Inter']",
+-        ),
+-        rx.redirect("/login"),
+-    )
++def permissions_page() -> rx.Component:
++    """Página de permisos (admin)."""
++    # ⚠️ Importante: no usar redirect dentro de rx.cond; devolverlo directo.
++    if ~(AppState.is_authenticated & AppState.user_is_admin):
++        return rx.redirect("/login")
++
++    return rx.box(
++        top_bar(),  # header fijo
++        rx.box(
++            sidebar(),
++            rx.box(
++                # título + refrescar
++                rx.hstack(
++                    rx.heading("Permisos", size="6"),
++                    rx.spacer(),
++                    rx.button("Refrescar", on_click=PermissionsState.on_load_permissions),
++                    align="center",
++                    width="100%",
++                    mb="4",
++                ),
++                # tabla de usuarios
++                rx.box(
++                    _users_table(),
++                    class_name="shadow overflow-hidden border border-gray-200 sm:rounded-lg dark:border-gray-700",
++                ),
++                # modal/overlay para editar permisos del usuario
++                _edit_permissions_modal(),
++                padding="16px",
++                pt=HEADER_H,  # evitar superposición con header fixed
++            ),
++        ),
++        class_name="bg-gray-50 dark:bg-gray-950 min-h-screen font-['Inter']",
++    )

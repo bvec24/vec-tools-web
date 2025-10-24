@@ -76,29 +76,41 @@ def sidebar() -> rx.Component:
                 ),
                 class_name="flex-1 overflow-y-auto p-4",
             ),
-            rx.cond(
-                AppState.user_is_admin,
-                rx.el.div(
-                    rx.el.a(
-                        rx.icon(tag="users", class_name="h-5 w-5 text-gray-400"),
-                        rx.el.span(
-                            "Admin",
-                            class_name="font-medium text-gray-700 dark:text-gray-300",
-                        ),
-                        href="/admin",
-                        class_name="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-800 transition-colors",
+            rx.el.div(
+                rx.el.a(
+                    rx.icon(tag="user", class_name="h-5 w-5 text-gray-400"),
+                    rx.el.span(
+                        "Mi Perfil",
+                        class_name="font-medium text-gray-700 dark:text-gray-300",
                     ),
-                    rx.el.a(
-                        rx.icon(tag="shield-check", class_name="h-5 w-5 text-gray-400"),
-                        rx.el.span(
-                            "Permissions",
-                            class_name="font-medium text-gray-700 dark:text-gray-300",
-                        ),
-                        href="/admin/permissions",
-                        class_name="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-800 transition-colors",
-                    ),
-                    class_name="border-t border-gray-200 dark:border-gray-800 p-4 space-y-1",
+                    href="/profile",
+                    class_name="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-800 transition-colors",
                 ),
+                rx.cond(
+                    AppState.user_is_admin,
+                    rx.el.div(
+                        rx.el.a(
+                            rx.icon(tag="users", class_name="h-5 w-5 text-gray-400"),
+                            rx.el.span(
+                                "Admin",
+                                class_name="font-medium text-gray-700 dark:text-gray-300",
+                            ),
+                            href="/admin",
+                            class_name="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-800 transition-colors",
+                        ),
+                        rx.el.a(
+                            rx.icon(tag="shield-check", class_name="h-5 w-5 text-gray-400"),
+                            rx.el.span(
+                                "Permissions",
+                                class_name="font-medium text-gray-700 dark:text-gray-300",
+                            ),
+                            href="/admin/permissions",
+                            class_name="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-800 transition-colors",
+                        ),
+                        class_name="space-y-1",
+                    ),
+                ),
+                class_name="border-t border-gray-200 dark:border-gray-800 p-4 space-y-1",
             ),
         ),
         class_name="fixed top-16 bottom-0 left-0 w-64 bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-800 flex flex-col pt-4 z-20",
@@ -241,13 +253,55 @@ def results_modal() -> rx.Component:
     )
 
 
-@rx.page(on_load=AppState.on_load)
 def index() -> rx.Component:
     """
     Página principal del dashboard.
     """
     return rx.el.main(
-        rx.fragment(rx.cond(AppState.user.is_none(), rx.redirect("/login"), rx.noop())),
+        top_bar(),
+        sidebar(),
+        rx.el.div(
+            rx.cond(
+                AppState.has_tools,
+                rx.foreach(
+                    AppState.groups_list,
+                    lambda group_item: rx.el.section(
+                        rx.el.h2(
+                            group_item[0],
+                            id=group_item[0],
+                            class_name="text-2xl font-bold text-gray-800 dark:text-white mb-6 pt-4 scroll-mt-20",
+                        ),
+                        rx.el.div(
+                            rx.foreach(group_item[1], tool_card),
+                            class_name="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6",
+                        ),
+                        class_name="mb-12",
+                    ),
+                ),
+                rx.el.div(
+                    rx.el.div(
+                        rx.icon(tag="folder-x", class_name="h-12 w-12 text-gray-400"),
+                        rx.el.h3(
+                            "No hay herramientas disponibles",
+                            class_name="mt-4 text-lg font-semibold text-gray-600 dark:text-gray-400",
+                        ),
+                        rx.el.p(
+                            "No se encontraron scripts en el directorio configurado.",
+                            class_name="mt-1 text-sm text-gray-500 dark:text-gray-400",
+                        ),
+                        class_name="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-800/20 dark:border-gray-700",
+                    ),
+                    class_name="flex items-center justify-center h-full",
+                ),
+            ),
+            class_name="ml-64 pt-20 px-8 pb-8 h-full",
+        ),
+        results_modal(),
+        class_name="bg-gray-50 dark:bg-gray-950 min-h-screen font-['Inter']",
+    )
+    if AppState.user.is_none():
+        return rx.redirect("/")
+    return rx.el.main(
         top_bar(),
         sidebar(),
         rx.el.div(

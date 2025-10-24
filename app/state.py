@@ -16,6 +16,13 @@ class Tool(TypedDict):
 
 
 class AppState(rx.State):
+    def get_user_id(self) -> int | None:
+        user_id = self.user_id
+        while hasattr(user_id, 'value'):
+            user_id = user_id.value
+        if isinstance(user_id, (int, float, str)):
+            return int(user_id)
+        return None
     """
     Estado principal de la aplicaci
     Gestiona la autenticaci	n, las herramientas, la interfaz y la ejecuci	n de scripts.
@@ -71,8 +78,8 @@ class AppState(rx.State):
     @rx.event
     def login(self, form_data: dict):
         """
-        Valida las credenciales contra la base de datos y establece el estado de la sesi\x93n.
-        Reflex se encarga de persistir el estado autom\x92ticamente.
+        Valida las credenciales contra la base de datos y establece el estado de la sesión.
+        Reflex se encarga de persistir el estado automáticamente.
         """
         username = form_data.get("username", "").strip()
         password = form_data.get("password", "").strip()
@@ -81,13 +88,13 @@ class AppState(rx.State):
                 db.query(UserModel).filter(UserModel.username == username).first()
             )
             if user_in_db and verify_password(password, user_in_db.password_hash):
-                self.user_id = user_in_db.id
+                self.user_id = int(user_in_db.id)
                 self.user = user_in_db.username
                 self.user_is_admin = user_in_db.is_admin
                 self.error_message = ""
-                return rx.redirect("/")
+                return rx.redirect("/home")
             else:
-                self.error_message = "Usuario o contrase\x91a incorrectos."
+                self.error_message = "Usuario o contraseña incorrectos."
                 self.user_id = None
                 self.user = None
                 self.user_is_admin = False
@@ -95,15 +102,15 @@ class AppState(rx.State):
     @rx.event
     def logout(self):
         """
-        Limpia el estado de la sesi\x93n y redirige a la p\x92gina de login.
+        Limpia el estado de la sesión y redirige a la página de login.
         """
         self.reset()
-        return rx.redirect("/login")
+        return rx.redirect("/")
 
     @rx.event
     async def on_load(self):
         """
-        Se ejecuta al cargar la p	ina. Inicializa la BD y descubre las herramientas.
+        Se ejecuta al cargar la página. Inicializa la BD y descubre las herramientas.
         """
         init_db()
         if self.is_authenticated:
@@ -111,12 +118,14 @@ class AppState(rx.State):
             sync_permissions(all_discovered_tools)
             with get_session() as db:
                 if self.user_is_admin:
+                    # Admin: ve todos los usuarios y herramientas
                     from app.states.admin_state import AdminState
-
                     admin_state = await self.get_state(AdminState)
                     await admin_state.load_users()
-                    self.tools = [cast(Tool, t) for t in all_discovered_tools]
+                    self.tools = all_discovered_tools
+                    self.user_permissions = set(tool["relpath"] for tool in all_discovered_tools)
                 else:
+                    # Usuario normal: solo ve las herramientas con permiso
                     user_perms = (
                         db.query(UserPermission)
                         .join(UserPermission.permission)
@@ -132,6 +141,7 @@ class AppState(rx.State):
                         for t in all_discovered_tools
                         if t["relpath"] in allowed_relpaths
                     ]
+            # Agrupar herramientas por grupo
             new_groups = {}
             for tool in self.tools:
                 group_name = tool["group"]
