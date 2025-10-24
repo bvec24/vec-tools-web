@@ -16,18 +16,19 @@ class Tool(TypedDict):
 
 
 class AppState(rx.State):
+    @rx.event
     def get_user_id(self) -> int | None:
         user_id = self.user_id
-        while hasattr(user_id, 'value'):
+        while hasattr(user_id, "value"):
             user_id = user_id.value
         if isinstance(user_id, (int, float, str)):
             return int(user_id)
         return None
+
     """
     Estado principal de la aplicaci
     Gestiona la autenticaci	n, las herramientas, la interfaz y la ejecuci	n de scripts.
     """
-
     user: Optional[str] = None
     user_id: Optional[int] = None
     user_is_admin: bool = False
@@ -118,14 +119,15 @@ class AppState(rx.State):
             sync_permissions(all_discovered_tools)
             with get_session() as db:
                 if self.user_is_admin:
-                    # Admin: ve todos los usuarios y herramientas
                     from app.states.admin_state import AdminState
+
                     admin_state = await self.get_state(AdminState)
                     await admin_state.load_users()
                     self.tools = all_discovered_tools
-                    self.user_permissions = set(tool["relpath"] for tool in all_discovered_tools)
+                    self.user_permissions = set(
+                        (tool["relpath"] for tool in all_discovered_tools)
+                    )
                 else:
-                    # Usuario normal: solo ve las herramientas con permiso
                     user_perms = (
                         db.query(UserPermission)
                         .join(UserPermission.permission)
@@ -141,7 +143,6 @@ class AppState(rx.State):
                         for t in all_discovered_tools
                         if t["relpath"] in allowed_relpaths
                     ]
-            # Agrupar herramientas por grupo
             new_groups = {}
             for tool in self.tools:
                 group_name = tool["group"]

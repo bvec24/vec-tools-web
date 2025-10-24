@@ -2,6 +2,7 @@ import reflex as rx
 from app.states.profile_state import ProfileState
 from app.pages.index import top_bar, sidebar
 
+
 def profile_page() -> rx.Component:
     return rx.el.main(
         top_bar(),
@@ -28,30 +29,38 @@ def profile_page() -> rx.Component:
                                 class_name="text-xl font-bold mb-4 text-gray-900 dark:text-white",
                             ),
                             rx.el.div(
-                                rx.el.label("Contraseña actual", class_name="text-sm font-medium"),
+                                rx.el.label(
+                                    "Contraseña actual",
+                                    class_name="text-sm font-medium",
+                                ),
                                 rx.el.input(
                                     type="password",
-                                    value=ProfileState.current_password,
-                                    on_change=lambda v: ProfileState.set_value("current_password", v),
+                                    name="current_password",
                                     class_name="w-full px-3 py-2 border rounded-md mb-4",
+                                    default_value=ProfileState.current_password,
                                 ),
                             ),
                             rx.el.div(
-                                rx.el.label("Nueva contraseña", class_name="text-sm font-medium"),
+                                rx.el.label(
+                                    "Nueva contraseña", class_name="text-sm font-medium"
+                                ),
                                 rx.el.input(
                                     type="password",
-                                    value=ProfileState.new_password,
-                                    on_change=lambda v: ProfileState.set_value("new_password", v),
+                                    name="new_password",
                                     class_name="w-full px-3 py-2 border rounded-md mb-4",
+                                    default_value=ProfileState.new_password,
                                 ),
                             ),
                             rx.el.div(
-                                rx.el.label("Confirmar nueva contraseña", class_name="text-sm font-medium"),
+                                rx.el.label(
+                                    "Confirmar nueva contraseña",
+                                    class_name="text-sm font-medium",
+                                ),
                                 rx.el.input(
                                     type="password",
-                                    value=ProfileState.confirm_password,
-                                    on_change=lambda v: ProfileState.set_value("confirm_password", v),
+                                    name="confirm_password",
                                     class_name="w-full px-3 py-2 border rounded-md mb-4",
+                                    default_value=ProfileState.confirm_password,
                                 ),
                             ),
                             rx.cond(
@@ -79,12 +88,12 @@ def profile_page() -> rx.Component:
                                 ),
                                 rx.el.button(
                                     "Guardar",
-                                    type="button",
-                                    on_click=ProfileState.change_password,
+                                    type="submit",
                                     class_name="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700",
                                 ),
                                 class_name="flex justify-end gap-4 mt-6",
                             ),
+                            on_submit=ProfileState.change_password,
                         ),
                         class_name="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 w-full max-w-md z-50 dark:bg-gray-800",
                     ),

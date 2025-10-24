@@ -55,7 +55,9 @@ def user_form_modal() -> rx.Component:
                             rx.el.input(
                                 type="checkbox",
                                 name="is_admin",
-                                default_checked=AdminState.user_form_data["is_admin"].to(bool),
+                                default_checked=AdminState.user_form_data[
+                                    "is_admin"
+                                ].to(bool),
                             ),
                             rx.el.label("Is Admin?", class_name="ml-2"),
                             class_name="flex items-center mb-4",
@@ -133,40 +135,72 @@ def admin_page() -> rx.Component:
             rx.box(
                 sidebar(),
                 rx.box(
-                    # Tabla de usuarios y acciones
                     rx.el.table(
                         rx.el.thead(
                             rx.el.tr(
-                                rx.el.th("Username", class_name="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"),
-                                rx.el.th("Email", class_name="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"),
-                                rx.el.th("Role", class_name="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"),
-                                rx.el.th("Created At", class_name="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"),
-                                rx.el.th("Actions", class_name="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"),
+                                rx.el.th(
+                                    "Username",
+                                    class_name="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
+                                ),
+                                rx.el.th(
+                                    "Email",
+                                    class_name="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
+                                ),
+                                rx.el.th(
+                                    "Role",
+                                    class_name="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
+                                ),
+                                rx.el.th(
+                                    "Created At",
+                                    class_name="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
+                                ),
+                                rx.el.th(
+                                    "Actions",
+                                    class_name="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider",
+                                ),
                             )
                         ),
                         rx.el.tbody(
                             rx.foreach(
                                 AdminState.all_users,
                                 lambda user: rx.el.tr(
-                                    rx.el.td(user["username"], class_name="px-6 py-4 whitespace-nowrap"),
-                                    rx.el.td(user["email"], class_name="px-6 py-4 whitespace-nowrap"),
-                                    rx.el.td(rx.cond(user["is_admin"], "Admin", "User"), class_name="px-6 py-4 whitespace-nowrap"),
-                                    rx.el.td(user["created_at"].to_string(), class_name="px-6 py-4 whitespace-nowrap"),
+                                    rx.el.td(
+                                        user["username"],
+                                        class_name="px-6 py-4 whitespace-nowrap",
+                                    ),
+                                    rx.el.td(
+                                        user["email"],
+                                        class_name="px-6 py-4 whitespace-nowrap",
+                                    ),
+                                    rx.el.td(
+                                        rx.cond(user["is_admin"], "Admin", "User"),
+                                        class_name="px-6 py-4 whitespace-nowrap",
+                                    ),
+                                    rx.el.td(
+                                        user["created_at"].to_string(),
+                                        class_name="px-6 py-4 whitespace-nowrap",
+                                    ),
                                     rx.el.td(
                                         rx.el.button(
                                             "Edit",
-                                            on_click=lambda: AdminState.open_edit_user_modal(user),
+                                            on_click=lambda: AdminState.open_edit_user_modal(
+                                                user
+                                            ),
                                             margin_right="1rem",
                                         ),
                                         rx.el.button(
                                             "Cambiar contraseña",
-                                            on_click=lambda: AdminState.open_password_modal(user["id"], user["username"]),
+                                            on_click=lambda: AdminState.open_password_modal(
+                                                user["id"], user["username"]
+                                            ),
                                             color_scheme="purple",
                                             margin_right="1rem",
                                         ),
                                         rx.el.button(
                                             "Delete",
-                                            on_click=lambda: AdminState.open_delete_dialog(user["id"]),
+                                            on_click=lambda: AdminState.open_delete_dialog(
+                                                user["id"]
+                                            ),
                                             color_scheme="red",
                                             disabled=user["id"] == AppState.user_id,
                                         ),
@@ -197,16 +231,29 @@ def admin_page() -> rx.Component:
                                     class_name="text-xl font-bold mb-4 text-gray-900 dark:text-white",
                                 ),
                                 rx.el.div(
-                                    rx.el.label("Nueva contraseña", class_name="text-sm font-medium"),
+                                    rx.el.label(
+                                        "Nueva contraseña",
+                                        class_name="text-sm font-medium",
+                                    ),
                                     rx.el.div(
                                         rx.el.input(
-                                            type=rx.cond(AdminState.show_new_password, "text", "password"),
-                                            value=AdminState.new_password,
-                                            on_change=lambda v: AdminState.set_password_value("new_password", v),
+                                            type=rx.cond(
+                                                AdminState.show_new_password,
+                                                "text",
+                                                "password",
+                                            ),
+                                            name="new_password",
                                             class_name="w-full px-3 py-2 border rounded-md mb-2",
+                                            default_value=AdminState.new_password,
                                         ),
                                         rx.el.button(
-                                            rx.icon(tag=rx.cond(AdminState.show_new_password, "eye-off", "eye")),
+                                            rx.icon(
+                                                tag=rx.cond(
+                                                    AdminState.show_new_password,
+                                                    "eye-off",
+                                                    "eye",
+                                                )
+                                            ),
                                             type="button",
                                             on_click=AdminState.toggle_show_new_password,
                                             class_name="ml-2 text-gray-500 hover:text-gray-700",
@@ -215,16 +262,29 @@ def admin_page() -> rx.Component:
                                     ),
                                 ),
                                 rx.el.div(
-                                    rx.el.label("Confirmar nueva contraseña", class_name="text-sm font-medium"),
+                                    rx.el.label(
+                                        "Confirmar nueva contraseña",
+                                        class_name="text-sm font-medium",
+                                    ),
                                     rx.el.div(
                                         rx.el.input(
-                                            type=rx.cond(AdminState.show_confirm_password, "text", "password"),
-                                            value=AdminState.confirm_password,
-                                            on_change=lambda v: AdminState.set_password_value("confirm_password", v),
+                                            type=rx.cond(
+                                                AdminState.show_confirm_password,
+                                                "text",
+                                                "password",
+                                            ),
+                                            name="confirm_password",
                                             class_name="w-full px-3 py-2 border rounded-md mb-2",
+                                            default_value=AdminState.confirm_password,
                                         ),
                                         rx.el.button(
-                                            rx.icon(tag=rx.cond(AdminState.show_confirm_password, "eye-off", "eye")),
+                                            rx.icon(
+                                                tag=rx.cond(
+                                                    AdminState.show_confirm_password,
+                                                    "eye-off",
+                                                    "eye",
+                                                )
+                                            ),
                                             type="button",
                                             on_click=AdminState.toggle_show_confirm_password,
                                             class_name="ml-2 text-gray-500 hover:text-gray-700",
@@ -257,12 +317,12 @@ def admin_page() -> rx.Component:
                                     ),
                                     rx.el.button(
                                         "Guardar",
-                                        type="button",
-                                        on_click=AdminState.change_user_password,
+                                        type="submit",
                                         class_name="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700",
                                     ),
                                     class_name="flex justify-end gap-4 mt-6",
                                 ),
+                                on_submit=AdminState.change_user_password,
                             ),
                             class_name="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 w-full max-w-md z-50 dark:bg-gray-800",
                         ),
@@ -273,5 +333,5 @@ def admin_page() -> rx.Component:
             ),
             class_name="bg-gray-50 dark:bg-gray-950 min-h-screen font-['Inter']",
         ),
-        ""
+        "",
     )

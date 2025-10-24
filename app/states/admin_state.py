@@ -14,7 +14,6 @@ class UserData(TypedDict):
 
 
 class AdminState(rx.State):
-    # Estado para cambio de contraseña
     is_password_modal_open: bool = False
     password_user_id: Optional[int] = None
     password_user_username: str = ""
@@ -62,24 +61,33 @@ class AdminState(rx.State):
         self.show_confirm_password = not self.show_confirm_password
 
     @rx.event
-    async def change_user_password(self):
-        if not self.new_password or not self.confirm_password:
+    async def change_user_password(self, form_data: dict):
+        new_password = form_data.get("new_password", "").strip()
+        confirm_password = form_data.get("confirm_password", "").strip()
+        if not new_password or not confirm_password:
             self.password_error = "Todos los campos son obligatorios."
             return
-        if self.new_password != self.confirm_password:
+        if new_password != confirm_password:
             self.password_error = "Las contraseñas no coinciden."
             return
         with get_session() as db:
-            user = db.query(UserModel).filter(UserModel.id == self.password_user_id).first()
+            user = (
+                db.query(UserModel)
+                .filter(UserModel.id == self.password_user_id)
+                .first()
+            )
             if not user:
                 self.password_error = "Usuario no encontrado."
                 return
-            user.password_hash = hash_password(self.new_password)
+            user.password_hash = hash_password(new_password)
             db.commit()
-        self.password_success = f"Contraseña de {self.password_user_username} cambiada exitosamente."
+        self.password_success = (
+            f"Contraseña de {self.password_user_username} cambiada exitosamente."
+        )
         self.password_error = ""
         self.new_password = ""
         self.confirm_password = ""
+
     all_users: list[UserData] = []
     is_user_modal_open: bool = False
     is_editing: bool = False

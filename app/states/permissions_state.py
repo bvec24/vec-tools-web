@@ -16,10 +16,11 @@ class PermissionData(TypedDict):
 
 
 class PermissionsState(rx.State):
+    @rx.event
     def set_search_term(self, value: str):
         self.search_term = value
-    """Manages the state for the permissions page."""
 
+    "Manages the state for the permissions page."
     users_with_permissions: list[UserPermissionInfo] = []
     all_permissions: list[PermissionData] = []
     search_term: str = ""
